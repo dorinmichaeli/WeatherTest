@@ -16,12 +16,15 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import com.example.class3demo2.databinding.FragmentStudentsListBinding;
 import com.example.class3demo2.model.Model;
 import com.example.class3demo2.model.Movie;
 import com.example.class3demo2.model.MovieModel;
 import com.example.class3demo2.model.Student;
+import com.example.class3demo2.model.WeatherDetails;
+import com.example.class3demo2.model.WeatherModel;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -78,6 +81,8 @@ public class StudentsListFragment extends Fragment {
             });
         });
 
+        updateCurrentWeatherTextLabel(view);
+
         return view;
     }
 
@@ -90,5 +95,15 @@ public class StudentsListFragment extends Fragment {
     void reloadData(){
 //        binding.progressBar.setVisibility(View.VISIBLE);
         Model.instance().refreshAllStudents();
+    }
+
+    private void updateCurrentWeatherTextLabel(View view) {
+        MainActivity activity = (MainActivity) getActivity();
+        TextView weatherLabel = view.findViewById(R.id.currentWeather);
+        LiveData<WeatherDetails> data = WeatherModel.instance.getCurrentWeatherForLocation(activity.locationLatitude, activity.locationLongitude);
+        data.observe(getViewLifecycleOwner(), weatherDetails -> {
+            String weatherText = "Weather in your area: " + weatherDetails.getTemperature() + " °C";
+            weatherLabel.setText(weatherText);
+        });
     }
 }
