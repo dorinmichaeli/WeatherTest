@@ -10,7 +10,6 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavDirections;
 import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -26,7 +25,6 @@ import com.example.class3demo2.model.Student;
 import com.example.class3demo2.model.WeatherDetails;
 import com.example.class3demo2.model.WeatherModel;
 
-import java.util.LinkedList;
 import java.util.List;
 
 public class StudentsListFragment extends Fragment {
@@ -43,7 +41,7 @@ public class StudentsListFragment extends Fragment {
 
         binding.recyclerView.setHasFixedSize(true);
         binding.recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        adapter = new StudentRecyclerAdapter(getLayoutInflater(),viewModel.getData().getValue());
+        adapter = new StudentRecyclerAdapter(getLayoutInflater(), viewModel.getData().getValue());
         binding.recyclerView.setAdapter(adapter);
 
         adapter.setOnItemClickListener(new StudentRecyclerAdapter.OnItemClickListener() {
@@ -62,22 +60,22 @@ public class StudentsListFragment extends Fragment {
 
         binding.progressBar.setVisibility(View.GONE);
 
-        viewModel.getData().observe(getViewLifecycleOwner(),list->{
+        viewModel.getData().observe(getViewLifecycleOwner(), list -> {
             adapter.setData(list);
         });
 
-        Model.instance().EventStudentsListLoadingState.observe(getViewLifecycleOwner(),status->{
+        Model.instance().EventStudentsListLoadingState.observe(getViewLifecycleOwner(), status -> {
             binding.swipeRefresh.setRefreshing(status == Model.LoadingState.LOADING);
         });
 
-        binding.swipeRefresh.setOnRefreshListener(()->{
+        binding.swipeRefresh.setOnRefreshListener(() -> {
             reloadData();
         });
 
         LiveData<List<Movie>> data = MovieModel.instance.searchMoviesByTitle("avatar");
-        data.observe(getViewLifecycleOwner(),list->{
-            list.forEach(item->{
-                Log.d("TAG","got movie: " + item.getTitle() + " " + item.getPoster());
+        data.observe(getViewLifecycleOwner(), list -> {
+            list.forEach(item -> {
+                Log.d("TAG", "got movie: " + item.getTitle() + " " + item.getPoster());
             });
         });
 
@@ -92,7 +90,7 @@ public class StudentsListFragment extends Fragment {
         viewModel = new ViewModelProvider(this).get(StudentsListFragmentViewModel.class);
     }
 
-    void reloadData(){
+    void reloadData() {
 //        binding.progressBar.setVisibility(View.VISIBLE);
         Model.instance().refreshAllStudents();
     }
@@ -100,10 +98,16 @@ public class StudentsListFragment extends Fragment {
     private void updateCurrentWeatherTextLabel(View view) {
         MainActivity activity = (MainActivity) getActivity();
         TextView weatherLabel = view.findViewById(R.id.currentWeather);
-        LiveData<WeatherDetails> data = WeatherModel.instance.getCurrentWeatherForLocation(activity.locationLatitude, activity.locationLongitude);
-        data.observe(getViewLifecycleOwner(), weatherDetails -> {
-            String weatherText = "Weather in your area: " + weatherDetails.getTemperature() + " °C";
-            weatherLabel.setText(weatherText);
+
+        activity.getLocation(location -> {
+            LiveData<WeatherDetails> data = WeatherModel.instance.getCurrentWeatherForLocation(
+                    location.getLatitude(),
+                    location.getLongitude()
+            );
+            data.observe(getViewLifecycleOwner(), weatherDetails -> {
+                String weatherText = "Weather in your area: " + weatherDetails.getTemperature() + " °C";
+                weatherLabel.setText(weatherText);
+            });
         });
     }
 }
